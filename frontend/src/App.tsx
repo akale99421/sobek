@@ -18,21 +18,8 @@ function App() {
         </div>
         
         <h1 className="text-6xl md:text-8xl font-bold text-white mb-6 tracking-tight">
-          Platinum
-          <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-            Sequence
-          </span>
-        </h1>
-        
-        <p className="text-xl md:text-2xl text-purple-200 mb-8 font-light">
-          Something extraordinary is coming
-        </p>
-        
-        <div className="flex items-center justify-center space-x-2">
-          <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse"></div>
-          <div className="w-3 h-3 bg-pink-400 rounded-full animate-pulse delay-75"></div>
-          <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse delay-150"></div>
-        </div>
+          Sobek by Platinum Sequence
+        </h1>        
       </div>
     </div>
   )

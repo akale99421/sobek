@@ -1,7 +1,10 @@
-.PHONY: dev build stop clean logs
+.PHONY: dev dev-hot build stop clean logs
 
 dev:
 	docker compose up --build
+
+dev-hot:
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 
 build:
 	docker compose build
