@@ -1,0 +1,6 @@
+project_id   = "your-gcp-project-id"
+region       = "us-central1"
+environment  = "production"
+node_count   = 2
+machine_type = "e2-medium"
+

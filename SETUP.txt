@@ -1,0 +1,164 @@
+PLATINUM SEQUENCE - SETUP GUIDE
+================================
+
+PREREQUISITES
+-------------
+□ Docker Desktop installed and running
+□ Docker Compose installed
+□ Git installed
+□ GCP account (for production deployment)
+□ gcloud CLI installed (for GCP deployment)
+□ kubectl installed (for GCP deployment)
+□ Terraform installed (for GCP deployment)
+
+LOCAL DEPLOYMENT
+----------------
+
+1. Clone the repository
+   $ git clone <your-repo-url>
+   $ cd sobek
+
+2. Copy environment file
+   $ cp .env.example .env
+
+3. Start all services
+   $ docker-compose up --build
+   
+   OR use Make:
+   $ make dev
+
+4. Verify services are running:
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000/health
+   - API Docs: http://localhost:8000/docs
+   - PostgreSQL: localhost:5432
+   - Qdrant: http://localhost:6333
+
+5. To stop services:
+   $ docker-compose down
+   
+   OR:
+   $ make stop
+
+6. To clean up volumes:
+   $ docker-compose down -v
+   
+   OR:
+   $ make clean
+
+TROUBLESHOOTING LOCAL
+---------------------
+- If ports are already in use, stop other services or change ports in docker-compose.yml
+- If containers fail to build, run: docker-compose build --no-cache
+- Check logs: docker-compose logs -f [service-name]
+
+GCP DEPLOYMENT
+--------------
+
+1. Set up GCP project
+   $ gcloud auth login
+   $ gcloud config set project YOUR_PROJECT_ID
+   $ gcloud services enable container.googleapis.com
+   $ gcloud services enable artifactregistry.googleapis.com
+
+2. Create Terraform state bucket
+   $ gsutil mb gs://platinumsequence-terraform-state
+
+3. Configure Terraform
+   $ cd infrastructure/terraform
+   $ cp terraform.tfvars.example terraform.tfvars
+   $ nano terraform.tfvars  # Edit with your project details
+
+4. Initialize and apply Terraform
+   $ terraform init
+   $ terraform plan
+   $ terraform apply
+
+5. Configure kubectl
+   $ gcloud container clusters get-credentials platinumsequence-gke --region us-central1
+
+6. Create Kubernetes secrets
+   $ cd ../k8s
+   $ cp secrets.yaml.template secrets.yaml
+   $ nano secrets.yaml  # Update with secure passwords
+   $ kubectl apply -f secrets.yaml
+
+7. Deploy cert-manager (for HTTPS)
+   $ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+   $ kubectl apply -f cert-manager.yaml
+
+8. Build and push Docker images
+   $ gcloud auth configure-docker gcr.io
+   
+   Backend:
+   $ cd ../../backend
+   $ docker build -t gcr.io/YOUR_PROJECT_ID/backend:latest .
+   $ docker push gcr.io/YOUR_PROJECT_ID/backend:latest
+   
+   Frontend:
+   $ cd ../frontend
+   $ docker build -t gcr.io/YOUR_PROJECT_ID/frontend:latest .
+   $ docker push gcr.io/YOUR_PROJECT_ID/frontend:latest
+
+9. Update Kubernetes manifests
+   $ cd ../infrastructure/k8s
+   $ sed -i 's/PROJECT_ID/YOUR_PROJECT_ID/g' *.yaml
+
+10. Deploy to Kubernetes
+    $ kubectl apply -f namespace.yaml
+    $ kubectl apply -f postgres-statefulset.yaml
+    $ kubectl apply -f qdrant-statefulset.yaml
+    $ kubectl apply -f backend-deployment.yaml
+    $ kubectl apply -f frontend-deployment.yaml
+    $ kubectl apply -f ingress.yaml
+
+11. Get the external IP
+    $ kubectl get ingress -n platinumsequence
+    
+    Wait for the IP address to be assigned (may take 5-10 minutes)
+
+12. Configure DNS
+    - Go to Namecheap dashboard
+    - Add A record: @ -> [YOUR_EXTERNAL_IP]
+    - Add A record: www -> [YOUR_EXTERNAL_IP]
+    - Wait for DNS propagation (up to 48 hours, usually 15 minutes)
+
+13. Verify deployment
+    $ kubectl get pods -n platinumsequence
+    
+    All pods should be in "Running" status
+
+14. Check your site
+    https://platinumsequence.com
+
+TROUBLESHOOTING GCP
+-------------------
+- Check pod status: kubectl get pods -n platinumsequence
+- View logs: kubectl logs -f <pod-name> -n platinumsequence
+- Describe pod: kubectl describe pod <pod-name> -n platinumsequence
+- Check ingress: kubectl describe ingress -n platinumsequence
+- If HTTPS not working, check cert-manager: kubectl get certificates -n platinumsequence
+
+USEFUL COMMANDS
+---------------
+Local:
+  make dev          - Start all services
+  make stop         - Stop all services
+  make clean        - Remove all volumes
+  make logs         - View all logs
+  make backend-logs - View backend logs only
+
+GCP:
+  kubectl get all -n platinumsequence
+  kubectl logs -f deployment/backend -n platinumsequence
+  kubectl logs -f deployment/frontend -n platinumsequence
+  kubectl exec -it <pod-name> -n platinumsequence -- /bin/sh
+
+NEXT STEPS
+----------
+□ Set up monitoring in GCP Console
+□ Configure backup for PostgreSQL
+□ Set up CI/CD with GitHub Actions
+□ Add custom domain email
+□ Configure Cloud CDN for better performance
+

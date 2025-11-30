@@ -1,0 +1,109 @@
+PLATINUM SEQUENCE - PROJECT STRUCTURE
+=====================================
+
+sobek/
+│
+├── backend/                          # FastAPI Backend
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py                   # Main FastAPI application
+│   │   └── core/
+│   │       ├── __init__.py
+│   │       └── config.py             # Configuration management
+│   ├── Dockerfile                    # Backend container image
+│   ├── .dockerignore
+│   └── requirements.txt              # Python dependencies
+│
+├── frontend/                         # React Frontend
+│   ├── src/
+│   │   ├── App.tsx                   # Main coming soon page
+│   │   ├── main.tsx                  # React entry point
+│   │   └── index.css                 # Tailwind + animations
+│   ├── public/
+│   ├── index.html                    # HTML template
+│   ├── Dockerfile                    # Frontend container (multi-stage)
+│   ├── nginx.conf                    # Nginx configuration
+│   ├── package.json                  # Node dependencies
+│   ├── tsconfig.json                 # TypeScript config
+│   ├── vite.config.ts                # Vite config
+│   ├── tailwind.config.js            # Tailwind config
+│   ├── postcss.config.js             # PostCSS config
+│   └── .dockerignore
+│
+├── infrastructure/                   # Infrastructure as Code
+│   ├── k8s/                          # Kubernetes manifests
+│   │   ├── namespace.yaml            # Kubernetes namespace
+│   │   ├── backend-deployment.yaml   # Backend deployment + service
+│   │   ├── frontend-deployment.yaml  # Frontend deployment + service
+│   │   ├── postgres-statefulset.yaml # PostgreSQL database
+│   │   ├── qdrant-statefulset.yaml   # Qdrant vector database
+│   │   ├── ingress.yaml              # HTTPS ingress
+│   │   ├── cert-manager.yaml         # SSL certificate issuer
+│   │   └── secrets.yaml.template     # Secrets template
+│   │
+│   └── terraform/                    # GCP Infrastructure
+│       ├── main.tf                   # Main Terraform config
+│       ├── variables.tf              # Input variables
+│       ├── outputs.tf                # Output values
+│       └── terraform.tfvars.example  # Variables template
+│
+├── docs/                             # Documentation
+│   ├── LOCAL_DEPLOYMENT.md           # Local setup guide
+│   └── GCP_DEPLOYMENT.md             # GCP deployment guide
+│
+├── docker-compose.yml                # Local development setup
+├── Makefile                          # Common commands
+├── .gitignore                        # Git ignore rules
+├── .env.example                      # Environment variables template
+│
+├── README.md                         # Project overview
+├── SETUP.txt                         # Quick setup checklist
+├── QUICK_START.md                    # 2-minute quick start
+└── PROJECT_SUMMARY.md                # What's been built
+
+SERVICES (when running)
+=======================
+
+Local Development (docker-compose):
+  - frontend:3000      → React app with hot-reload
+  - backend:8000       → FastAPI with auto-reload
+  - postgres:5432      → PostgreSQL database
+  - qdrant:6333        → Vector database
+
+Production (GKE):
+  - frontend (2 pods)  → Nginx serving React
+  - backend (2 pods)   → FastAPI application
+  - postgres (1 pod)   → StatefulSet with persistent storage
+  - qdrant (1 pod)     → StatefulSet with persistent storage
+  - ingress            → HTTPS load balancer
+
+KEY FILES
+=========
+
+Start Here:
+  - QUICK_START.md     → Get running in 2 minutes
+  - SETUP.txt          → Step-by-step checklist
+
+Development:
+  - docker-compose.yml → Start local environment
+  - Makefile           → Common commands
+
+Backend:
+  - backend/app/main.py → API endpoints
+  - backend/app/core/config.py → Configuration
+
+Frontend:
+  - frontend/src/App.tsx → Coming soon page
+  - frontend/src/index.css → Styling
+
+Deployment:
+  - infrastructure/terraform/main.tf → GCP setup
+  - infrastructure/k8s/*.yaml → Kubernetes config
+
+Documentation:
+  - README.md          → Full project docs
+  - docs/*.md          → Detailed guides
+
+TOTAL FILES: 45+
+TOTAL LINES: 2000+
+
