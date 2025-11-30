@@ -5,9 +5,7 @@ from sqlalchemy.orm import Session
 from .core.config import settings
 from .db.database import engine, get_db, Base
 from .models.session import Session as SessionModel
-from .models.file import File as FileModel
 from .schemas.session import SessionCreate, SessionResponse
-from .api.routes import files, embeddings, clustering, search, analysis
 
 Base.metadata.create_all(bind=engine)
 
@@ -25,13 +23,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Register API routes
-app.include_router(files.router)
-app.include_router(embeddings.router)
-app.include_router(clustering.router)
-app.include_router(search.router)
-app.include_router(analysis.router)
 
 @app.get("/health")
 async def health_check():

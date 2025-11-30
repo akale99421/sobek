@@ -7,6 +7,42 @@ Purpose: Track all backend changes for frontend integration
 Frontend Agent: Review this file daily for new APIs and changes!
 
 ================================================================================
+2025-11-30 - CRITICAL FIX: Removed Broken Advanced Features
+================================================================================
+
+ISSUE FIXED:
+- Backend was crashing on startup
+- ImportError: sentence_transformers and advanced ML features
+- These features were added prematurely without proper dependencies
+
+CHANGES:
+- Removed imports: files, embeddings, clustering, search, analysis routes
+- Removed File model import (not yet created)
+- Backend now starts successfully with basic features only
+
+CURRENT WORKING ENDPOINTS:
+✅ GET /health - Health check
+✅ POST /api/session - Create/update session  
+✅ GET /api/session/{id} - Get session info
+
+REMOVED (NOT READY):
+❌ File upload endpoints
+❌ Embedding generation
+❌ Clustering features
+❌ Search features
+❌ Analysis features
+
+NEXT STEPS:
+- Will implement file upload properly (MinIO + boto3)
+- Will add features incrementally
+- Each feature will be tested before adding
+
+Frontend Impact:
+- Frontend can now connect to backend
+- Session management works
+- File upload still needs to be implemented
+
+================================================================================
 2025-11-30 - SESSION SYSTEM COMPLETE
 ================================================================================
 
@@ -72,6 +108,24 @@ INFRASTRUCTURE:
 - Qdrant connection configured (not yet used)
 
 ================================================================================
+2025-11-30 - END OF DAY STATUS
+================================================================================
+
+INFRASTRUCTURE ADDED:
+- MinIO service added to docker-compose.yml
+- MinIO running at localhost:9000 (API) and localhost:9001 (Console)
+- Credentials: minioadmin/minioadmin
+- Ready for file storage implementation
+
+COMMUNICATION STRUCTURE CREATED:
+- New communication/ directory for team coordination
+- BACKEND_TODOS.txt - Task tracking
+- BACKEND_CHANGELOG.txt - API documentation
+- FRONTEND_TODOS.txt - Frontend task tracking
+- Instructions for both agents
+- HEAD_EXECUTOR_SUMMARY.txt for coordination
+
+================================================================================
 IN PROGRESS
 ================================================================================
 
@@ -84,4 +138,3 @@ IN PROGRESS
 Frontend Impact: Will unblock file upload functionality
 
 ================================================================================
-
