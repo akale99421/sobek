@@ -1,0 +1,179 @@
+================================================================================
+BACKEND AGENT INSTRUCTIONS
+================================================================================
+Role: Backend Developer
+Reporting To: Head Executor Agent
+
+================================================================================
+DAILY WORKFLOW
+================================================================================
+
+1. MORNING ROUTINE
+   [ ] Review BACKEND_TODOS.txt for your current tasks
+   [ ] Check priority and blockers
+   [ ] Plan your implementation approach
+
+2. DURING DEVELOPMENT
+   [ ] Implement features from BACKEND_TODOS.txt
+   [ ] Test endpoints with curl or /docs
+   [ ] Update database models as needed
+   [ ] Write clean, documented code
+
+3. AFTER COMPLETING A FEATURE
+   [ ] Update BACKEND_CHANGELOG.txt with:
+       - New endpoints (with request/response examples)
+       - Database changes
+       - Dependencies added
+   [ ] Update BACKEND_TODOS.txt:
+       - Mark task as complete
+       - Move to "COMPLETED TASKS" section
+   [ ] Add tasks to FRONTEND_TODOS.txt if frontend integration needed
+   [ ] Notify Head Executor if frontend is blocked
+
+4. END OF DAY
+   [ ] Review what's complete
+   [ ] Update todos with current status
+   [ ] Note any blockers or issues
+
+================================================================================
+CODE STANDARDS
+================================================================================
+
+STRUCTURE:
+- Models: backend/app/models/
+- Schemas: backend/app/schemas/
+- API Routes: backend/app/api/ (when we add more)
+- Services: backend/app/services/ (business logic)
+- Database: backend/app/db/
+
+NAMING:
+- Models: Singular (Session, File, User)
+- Tables: Plural (sessions, files, users)
+- Endpoints: RESTful (/api/resource, /api/resource/{id})
+
+DOCUMENTATION:
+- Add docstrings to all functions
+- Include request/response examples
+- Document error cases
+
+================================================================================
+DATABASE GUIDELINES
+================================================================================
+
+- Use SQLAlchemy ORM
+- Auto-create tables on startup (Base.metadata.create_all)
+- Add migrations later when needed (Alembic)
+- Always use sessions with try/finally
+- Index foreign keys and frequently queried fields
+
+================================================================================
+API DESIGN
+================================================================================
+
+ENDPOINTS:
+- GET /api/resource - List all
+- GET /api/resource/{id} - Get one
+- POST /api/resource - Create
+- PUT /api/resource/{id} - Update
+- DELETE /api/resource/{id} - Delete
+
+RESPONSES:
+- Always return JSON
+- Use Pydantic schemas for validation
+- Include proper HTTP status codes
+- Return helpful error messages
+
+ERROR HANDLING:
+- 400: Bad Request (validation errors)
+- 404: Not Found
+- 500: Internal Server Error
+- Include error details in response
+
+================================================================================
+FRONTEND COORDINATION
+================================================================================
+
+WHEN TO UPDATE FRONTEND_TODOS.txt:
+- New endpoint is ready and tested
+- Frontend needs to integrate it
+- API contract is stable
+
+WHAT TO INCLUDE:
+- Endpoint URL and method
+- Request format
+- Response format
+- Any special headers or auth
+- Error cases to handle
+
+EXAMPLE FRONTEND TODO:
+```
+[ ] Connect File Upload
+   - Backend Ready: POST /api/files/upload
+   - Action: Send files from upload UI
+   - Response: Array of file objects with IDs
+   - Priority: HIGH
+```
+
+================================================================================
+TESTING
+================================================================================
+
+BEFORE MARKING COMPLETE:
+[ ] Test endpoint with curl
+[ ] Test with /docs (Swagger UI)
+[ ] Test error cases
+[ ] Verify database changes
+[ ] Check logs for errors
+
+EXAMPLE CURL TEST:
+```bash
+curl -X POST http://localhost:8000/api/session \
+  -H "Content-Type: application/json" \
+  -d '{"session_id": "test_123"}'
+```
+
+================================================================================
+DEPENDENCIES
+================================================================================
+
+ADDING NEW PACKAGES:
+1. Add to backend/requirements.txt
+2. Rebuild Docker container
+3. Document in BACKEND_CHANGELOG.txt
+4. Note if frontend needs to know
+
+CURRENT STACK:
+- FastAPI: Web framework
+- SQLAlchemy: ORM
+- Pydantic: Validation
+- psycopg2: PostgreSQL driver
+- boto3: Will add for MinIO/S3
+
+================================================================================
+COMMUNICATION
+================================================================================
+
+REPORT TO HEAD EXECUTOR WHEN:
+- Task is blocked
+- Need infrastructure changes (new database, service, etc.)
+- Major architectural decisions needed
+- Frontend is blocked waiting for you
+
+DAILY STANDUP (in changelog):
+- What did you complete?
+- What are you working on?
+- Any blockers?
+
+================================================================================
+CURRENT PRIORITIES
+================================================================================
+
+1. File Upload to MinIO (HIGH)
+2. File Metadata Storage (HIGH)
+3. File Retrieval APIs (MEDIUM)
+4. File Management (MEDIUM)
+
+See BACKEND_TODOS.txt for detailed tasks.
+
+================================================================================
+

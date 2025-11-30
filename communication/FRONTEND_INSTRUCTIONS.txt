@@ -1,0 +1,256 @@
+================================================================================
+FRONTEND AGENT INSTRUCTIONS
+================================================================================
+Role: Frontend Developer
+Reporting To: Head Executor Agent
+
+================================================================================
+DAILY WORKFLOW
+================================================================================
+
+1. MORNING ROUTINE
+   [ ] Review BACKEND_CHANGELOG.txt for new APIs
+   [ ] Review BACKEND_TODOS.txt to see what's coming
+   [ ] Review FRONTEND_TODOS.txt for your tasks
+   [ ] Check which tasks are unblocked
+
+2. DURING DEVELOPMENT
+   [ ] Implement features from FRONTEND_TODOS.txt
+   [ ] Test with backend running (docker compose up)
+   [ ] Use TypeScript for type safety
+   [ ] Follow existing UI patterns
+
+3. AFTER COMPLETING A FEATURE
+   [ ] Update FRONTEND_TODOS.txt:
+       - Mark task as complete
+       - Move to "COMPLETED TASKS" section
+   [ ] Test thoroughly with backend
+   [ ] Check browser console for errors
+   [ ] Verify hot-reload works
+
+4. END OF DAY
+   [ ] Review what's complete
+   [ ] Update todos with current status
+   [ ] Note any blockers or backend needs
+
+================================================================================
+CODE STANDARDS
+================================================================================
+
+STRUCTURE:
+- Components: frontend/src/components/
+- Pages: frontend/src/pages/ (if we add routing)
+- Types: frontend/src/types/
+- API Client: frontend/src/api/
+- Styles: Tailwind CSS classes
+
+NAMING:
+- Components: PascalCase (FileUpload.tsx)
+- Functions: camelCase (handleFileUpload)
+- Constants: UPPER_SNAKE_CASE (API_BASE_URL)
+
+TYPESCRIPT:
+- Always use types
+- Define interfaces for API responses
+- Use type inference where possible
+- Avoid 'any' type
+
+================================================================================
+UI/UX GUIDELINES
+================================================================================
+
+DESIGN SYSTEM:
+- Colors: Green theme (emerald-50 to emerald-900)
+- Fonts: System fonts (font-sans)
+- Spacing: Tailwind spacing scale
+- Animations: Subtle, professional
+
+COMPONENTS:
+- Reusable components in components/
+- Props should be typed
+- Use React hooks (useState, useEffect)
+- Keep components focused (single responsibility)
+
+RESPONSIVE:
+- Mobile-first approach
+- Test on different screen sizes
+- Use Tailwind responsive classes (sm:, md:, lg:)
+
+================================================================================
+BACKEND INTEGRATION
+================================================================================
+
+API BASE URL:
+- Development: http://localhost:8000
+- Use environment variables for flexibility
+
+MAKING API CALLS:
+```typescript
+const response = await fetch('http://localhost:8000/api/endpoint', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(data),
+})
+const result = await response.json()
+```
+
+ERROR HANDLING:
+- Always check response.ok
+- Display user-friendly error messages
+- Log errors to console
+- Don't crash on API errors
+
+SESSION ID:
+- Use existing sessionId from App.tsx state
+- Include in API calls where needed
+- Already stored in localStorage
+
+================================================================================
+CHECKING BACKEND STATUS
+================================================================================
+
+BEFORE IMPLEMENTING:
+1. Check BACKEND_CHANGELOG.txt
+   - Is the API documented?
+   - What's the request/response format?
+
+2. Test the API manually:
+   ```bash
+   curl -X POST http://localhost:8000/api/endpoint \
+     -H "Content-Type: application/json" \
+     -d '{"test": "data"}'
+   ```
+
+3. Check /docs:
+   - Visit http://localhost:8000/docs
+   - Test endpoint in Swagger UI
+   - Verify response format
+
+IF API ISN'T READY:
+- Mark task as [BLOCKED] in FRONTEND_TODOS.txt
+- Note what you're waiting for
+- Work on non-blocked tasks
+- Notify Head Executor if urgent
+
+================================================================================
+TESTING
+================================================================================
+
+BEFORE MARKING COMPLETE:
+[ ] Feature works with backend
+[ ] Error cases handled
+[ ] UI looks good on mobile
+[ ] No console errors
+[ ] Hot-reload works
+[ ] Session ID is sent correctly
+
+MANUAL TESTING:
+1. Start backend: docker compose up
+2. Start frontend dev: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+3. Open http://localhost:5173
+4. Test feature thoroughly
+5. Check browser console
+6. Check Network tab for API calls
+
+================================================================================
+STATE MANAGEMENT
+================================================================================
+
+CURRENT APPROACH:
+- React useState for local state
+- Props for component communication
+- localStorage for session persistence
+
+PATTERNS:
+- Lift state up when needed
+- Keep state close to where it's used
+- Use useEffect for side effects
+- Clean up in useEffect returns
+
+================================================================================
+FILE STRUCTURE
+================================================================================
+
+CURRENT:
+```
+frontend/
+├── src/
+│   ├── App.tsx          # Main app component
+│   ├── main.tsx         # Entry point
+│   ├── index.css        # Global styles
+│   └── types/           # TypeScript types (add as needed)
+├── public/              # Static assets
+├── index.html           # HTML template
+└── package.json         # Dependencies
+```
+
+ADDING NEW FILES:
+- Create in appropriate directory
+- Import in parent component
+- Export properly
+- Use TypeScript
+
+================================================================================
+DEPENDENCIES
+================================================================================
+
+CURRENT PACKAGES:
+- react: UI library
+- typescript: Type safety
+- vite: Build tool
+- tailwindcss: Styling
+- jszip: ZIP extraction
+
+ADDING NEW PACKAGES:
+1. npm install package-name
+2. Restart frontend container
+3. Import and use
+4. Document if important
+
+================================================================================
+HOT RELOAD
+================================================================================
+
+DEVELOPMENT MODE:
+- Run: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+- Frontend: http://localhost:5173
+- Changes auto-refresh
+- Fast iteration
+
+PRODUCTION MODE:
+- Run: docker compose up
+- Frontend: http://localhost:3000
+- No hot-reload (need rebuild)
+- Test before deploying
+
+================================================================================
+COMMUNICATION
+================================================================================
+
+REPORT TO HEAD EXECUTOR WHEN:
+- Blocked by missing backend API
+- Need design decisions
+- Found bugs in backend
+- Need new dependencies
+
+ASK BACKEND AGENT (via Head Executor):
+- API not working as documented
+- Need additional endpoints
+- Response format unclear
+- Error handling questions
+
+================================================================================
+CURRENT PRIORITIES
+================================================================================
+
+1. Connect "Analyze Files" button (BLOCKED - waiting for upload API)
+2. Display uploaded files list (BLOCKED - waiting for list API)
+3. Upload progress indicator (CAN DO NOW)
+4. Error handling UI (CAN DO NOW)
+
+See FRONTEND_TODOS.txt for detailed tasks.
+
+================================================================================
+

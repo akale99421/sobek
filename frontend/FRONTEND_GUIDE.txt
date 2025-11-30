@@ -1,0 +1,646 @@
+================================================================================
+FRONTEND IMPLEMENTATION GUIDE - INVENTORY ANALYSIS
+================================================================================
+
+This guide provides detailed implementation instructions, code examples, and
+best practices for integrating the inventory analysis backend features.
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. Setup & Configuration
+2. File Upload Implementation
+3. Embedding Status Tracking
+4. Dendrogram Visualization
+5. Cluster Explorer
+6. Similarity Search
+7. Anomaly Detection
+8. File Management
+9. State Management Recommendations
+10. UI/UX Best Practices
+
+================================================================================
+1. SETUP & CONFIGURATION
+================================================================================
+
+Import the API client and types:
+
+```typescript
+import { inventoryAPI, FileUploadResponse, FileResponse } from './types/api';
+```
+
+The API client is pre-configured with the base URL. You can override it:
+
+```typescript
+import { InventoryAPI } from './types/api';
+const customAPI = new InventoryAPI('https://your-api-url.com');
+```
+
+================================================================================
+2. FILE UPLOAD IMPLEMENTATION
+================================================================================
+
+BASIC UPLOAD:
+-------------
+
+```typescript
+const handleFileUpload = async (files: File[]) => {
+  try {
+    const sessionId = localStorage.getItem('sessionId') || 'default';
+    const results = await inventoryAPI.uploadFiles(sessionId, files);
+    
+    console.log('Upload successful:', results);
+    // Update UI with uploaded files
+    setUploadedFiles(prev => [...prev, ...results]);
+  } catch (error) {
+    console.error('Upload failed:', error);
+    // Show error message to user
+  }
+};
+```
+
+WITH PROGRESS TRACKING:
+-----------------------
+
+```typescript
+const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+
+const handleFileUploadWithProgress = async (files: File[]) => {
+  const sessionId = localStorage.getItem('sessionId') || 'default';
+  
+  // Initialize progress for each file
+  files.forEach(file => {
+    setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
+  });
+  
+  try {
+    // Note: For real progress, you'd need to implement XMLHttpRequest
+    // This is a simplified version
+    const results = await inventoryAPI.uploadFiles(sessionId, files);
+    
+    // Mark all as complete
+    files.forEach(file => {
+      setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
+    });
+    
+    return results;
+  } catch (error) {
+    console.error('Upload failed:', error);
+    throw error;
+  }
+};
+```
+
+DRAG & DROP COMPONENT:
+----------------------
+
+```typescript
+const FileDropZone = ({ onFilesSelected }: { onFilesSelected: (files: File[]) => void }) => {
+  const [isDragging, setIsDragging] = useState(false);
+  
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    onFilesSelected(files);
+  };
+  
+  return (
+    <div
+      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={handleDrop}
+      className={`border-2 border-dashed p-8 ${isDragging ? 'border-blue-500' : 'border-gray-300'}`}
+    >
+      <p>Drag files here or click to browse</p>
+    </div>
+  );
+};
+```
+
+================================================================================
+3. EMBEDDING STATUS TRACKING
+================================================================================
+
+POLLING FOR STATUS:
+-------------------
+
+```typescript
+const [embeddingStatuses, setEmbeddingStatuses] = useState<Record<string, string>>({});
+
+useEffect(() => {
+  if (!sessionId) return;
+  
+  const pollInterval = setInterval(async () => {
+    try {
+      const statuses = await inventoryAPI.getSessionEmbeddingStatus(sessionId);
+      
+      const statusMap: Record<string, string> = {};
+      statuses.forEach(status => {
+        statusMap[status.file_id] = status.status;
+      });
+      
+      setEmbeddingStatuses(statusMap);
+      
+      // Stop polling if all are completed or failed
+      const allDone = statuses.every(s => 
+        s.status === 'completed' || s.status === 'failed'
+      );
+      
+      if (allDone) {
+        clearInterval(pollInterval);
+      }
+    } catch (error) {
+      console.error('Failed to fetch embedding status:', error);
+    }
+  }, 2000); // Poll every 2 seconds
+  
+  return () => clearInterval(pollInterval);
+}, [sessionId]);
+```
+
+STATUS INDICATOR COMPONENT:
+---------------------------
+
+```typescript
+const EmbeddingStatusBadge = ({ status }: { status: string }) => {
+  const colors = {
+    pending: 'bg-yellow-200 text-yellow-800',
+    processing: 'bg-blue-200 text-blue-800',
+    completed: 'bg-green-200 text-green-800',
+    failed: 'bg-red-200 text-red-800',
+  };
+  
+  return (
+    <span className={`px-2 py-1 rounded text-xs ${colors[status] || 'bg-gray-200'}`}>
+      {status}
+    </span>
+  );
+};
+```
+
+================================================================================
+4. DENDROGRAM VISUALIZATION
+================================================================================
+
+GENERATE DENDROGRAM:
+--------------------
+
+```typescript
+const [dendrogramData, setDendrogramData] = useState<DendrogramResponse | null>(null);
+const [isGenerating, setIsGenerating] = useState(false);
+
+const generateDendrogram = async (numClusters?: number) => {
+  setIsGenerating(true);
+  
+  try {
+    const result = await inventoryAPI.generateDendrogram({
+      session_id: sessionId,
+      num_clusters: numClusters,
+    });
+    
+    setDendrogramData(result);
+  } catch (error) {
+    console.error('Failed to generate dendrogram:', error);
+  } finally {
+    setIsGenerating(false);
+  }
+};
+```
+
+VISUALIZATION RECOMMENDATIONS:
+------------------------------
+
+For dendrogram visualization, consider using:
+- D3.js for custom dendrograms
+- Plotly.js for interactive dendrograms
+- React-vis for simpler visualizations
+
+Example with D3.js structure:
+
+```typescript
+import * as d3 from 'd3';
+
+const DendrogramVisualization = ({ data }: { data: DendrogramResponse }) => {
+  const svgRef = useRef<SVGSVGElement>(null);
+  
+  useEffect(() => {
+    if (!svgRef.current || !data) return;
+    
+    // Convert linkage matrix to hierarchical structure
+    // Use d3.cluster() or d3.tree() to layout
+    // Render using SVG paths
+    
+    // This is a simplified example - full implementation needed
+    const svg = d3.select(svgRef.current);
+    // ... D3 dendrogram code here
+  }, [data]);
+  
+  return <svg ref={svgRef} width={800} height={600} />;
+};
+```
+
+CLUSTER SUMMARY DISPLAY:
+------------------------
+
+```typescript
+const ClusterSummaryCard = ({ cluster }: { cluster: ClusterSummary }) => {
+  return (
+    <div className="border rounded p-4 mb-4">
+      <h3 className="font-bold">Cluster {cluster.cluster_id}</h3>
+      <p>Items: {cluster.item_count}</p>
+      <p>Avg Distance: {cluster.average_distance.toFixed(3)}</p>
+      
+      <div className="mt-2">
+        <h4 className="font-semibold text-sm">Representative Items:</h4>
+        <ul className="text-sm">
+          {cluster.representative_items.map(item => (
+            <li key={item.file_id}>
+              {item.filename} ({item.distance_to_centroid.toFixed(3)})
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+};
+```
+
+================================================================================
+5. CLUSTER EXPLORER
+================================================================================
+
+FETCH AND DISPLAY CLUSTERS:
+----------------------------
+
+```typescript
+const [clusters, setClusters] = useState<ClusterSummary[]>([]);
+const [numClusters, setNumClusters] = useState(5);
+
+const fetchClusters = async () => {
+  try {
+    const result = await inventoryAPI.getClusters(sessionId, numClusters);
+    setClusters(result);
+  } catch (error) {
+    console.error('Failed to fetch clusters:', error);
+  }
+};
+
+// UI Component
+const ClusterExplorer = () => {
+  return (
+    <div>
+      <div className="mb-4">
+        <label>Number of Clusters:</label>
+        <input
+          type="number"
+          value={numClusters}
+          onChange={(e) => setNumClusters(parseInt(e.target.value))}
+          min={2}
+          max={20}
+        />
+        <button onClick={fetchClusters}>Generate Clusters</button>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        {clusters.map(cluster => (
+          <ClusterSummaryCard key={cluster.cluster_id} cluster={cluster} />
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+================================================================================
+6. SIMILARITY SEARCH
+================================================================================
+
+SEARCH BY FILE:
+---------------
+
+```typescript
+const [searchResults, setSearchResults] = useState<SimilarityResult[]>([]);
+
+const searchSimilarToFile = async (fileId: string) => {
+  try {
+    const result = await inventoryAPI.searchSimilar({
+      session_id: sessionId,
+      file_id: fileId,
+      top_k: 10,
+    });
+    
+    setSearchResults(result.results);
+  } catch (error) {
+    console.error('Search failed:', error);
+  }
+};
+```
+
+SEARCH BY TEXT:
+---------------
+
+```typescript
+const [queryText, setQueryText] = useState('');
+
+const searchSimilarByText = async () => {
+  if (!queryText.trim()) return;
+  
+  try {
+    const result = await inventoryAPI.searchSimilar({
+      session_id: sessionId,
+      query_text: queryText,
+      top_k: 10,
+    });
+    
+    setSearchResults(result.results);
+  } catch (error) {
+    console.error('Search failed:', error);
+  }
+};
+```
+
+RESULTS DISPLAY:
+----------------
+
+```typescript
+const SearchResults = ({ results }: { results: SimilarityResult[] }) => {
+  return (
+    <div className="space-y-2">
+      {results.map((result, index) => (
+        <div key={result.file_id} className="border rounded p-3 flex justify-between">
+          <div>
+            <span className="font-semibold">#{index + 1}</span>
+            <span className="ml-2">{result.filename}</span>
+            <span className="ml-2 text-gray-500">({result.file_type})</span>
+          </div>
+          <div>
+            <span className="text-green-600">
+              {(result.similarity_score * 100).toFixed(1)}% similar
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+```
+
+================================================================================
+7. ANOMALY DETECTION
+================================================================================
+
+DETECT ANOMALIES:
+-----------------
+
+```typescript
+const [anomalies, setAnomalies] = useState<AnomalyItem[]>([]);
+const [threshold, setThreshold] = useState(95.0);
+
+const detectAnomalies = async () => {
+  try {
+    const result = await inventoryAPI.detectAnomalies(sessionId, threshold);
+    setAnomalies(result.anomalies);
+  } catch (error) {
+    console.error('Anomaly detection failed:', error);
+  }
+};
+```
+
+ANOMALY DISPLAY:
+----------------
+
+```typescript
+const AnomalyList = ({ anomalies }: { anomalies: AnomalyItem[] }) => {
+  return (
+    <div>
+      <h3 className="text-xl font-bold mb-4">
+        Detected Anomalies ({anomalies.length})
+      </h3>
+      
+      <div className="space-y-2">
+        {anomalies.map(anomaly => (
+          <div key={anomaly.file_id} className="border-l-4 border-red-500 p-3 bg-red-50">
+            <div className="flex justify-between">
+              <span className="font-semibold">{anomaly.filename}</span>
+              <span className="text-red-600">
+                Score: {anomaly.anomaly_score.toFixed(3)}
+              </span>
+            </div>
+            <p className="text-sm text-gray-600">
+              Distance: {anomaly.distance_to_nearest_cluster.toFixed(3)}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+================================================================================
+8. FILE MANAGEMENT
+================================================================================
+
+LIST FILES:
+-----------
+
+```typescript
+const [files, setFiles] = useState<FileResponse[]>([]);
+
+const fetchFiles = async () => {
+  try {
+    const result = await inventoryAPI.getSessionFiles(sessionId);
+    setFiles(result.files);
+  } catch (error) {
+    console.error('Failed to fetch files:', error);
+  }
+};
+```
+
+DELETE FILE:
+------------
+
+```typescript
+const deleteFile = async (fileId: string) => {
+  if (!confirm('Are you sure you want to delete this file?')) return;
+  
+  try {
+    await inventoryAPI.deleteFile(fileId);
+    // Remove from local state
+    setFiles(prev => prev.filter(f => f.id !== fileId));
+  } catch (error) {
+    console.error('Failed to delete file:', error);
+  }
+};
+```
+
+FILE LIST COMPONENT:
+--------------------
+
+```typescript
+const FileList = ({ files, onDelete }: { 
+  files: FileResponse[], 
+  onDelete: (id: string) => void 
+}) => {
+  return (
+    <div className="space-y-2">
+      {files.map(file => (
+        <div key={file.id} className="border rounded p-3 flex justify-between items-center">
+          <div>
+            <p className="font-semibold">{file.filename}</p>
+            <p className="text-sm text-gray-500">
+              {file.file_type} • {(file.file_size / 1024).toFixed(2)} KB
+            </p>
+            <EmbeddingStatusBadge status={file.embedding_status} />
+          </div>
+          <button
+            onClick={() => onDelete(file.id)}
+            className="text-red-500 hover:text-red-700"
+          >
+            Delete
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+};
+```
+
+================================================================================
+9. STATE MANAGEMENT RECOMMENDATIONS
+================================================================================
+
+For complex state management, consider using:
+
+CONTEXT API:
+------------
+
+```typescript
+interface InventoryContextType {
+  sessionId: string;
+  files: FileResponse[];
+  embeddingStatuses: Record<string, string>;
+  uploadFiles: (files: File[]) => Promise<void>;
+  deleteFile: (fileId: string) => Promise<void>;
+  // ... other methods
+}
+
+const InventoryContext = createContext<InventoryContextType | null>(null);
+
+export const InventoryProvider = ({ children }: { children: React.ReactNode }) => {
+  const [files, setFiles] = useState<FileResponse[]>([]);
+  // ... other state
+  
+  const value = {
+    sessionId,
+    files,
+    embeddingStatuses,
+    uploadFiles: async (files: File[]) => {
+      // Implementation
+    },
+    // ... other methods
+  };
+  
+  return (
+    <InventoryContext.Provider value={value}>
+      {children}
+    </InventoryContext.Provider>
+  );
+};
+```
+
+ZUSTAND (Alternative):
+----------------------
+
+```typescript
+import create from 'zustand';
+
+interface InventoryStore {
+  files: FileResponse[];
+  clusters: ClusterSummary[];
+  setFiles: (files: FileResponse[]) => void;
+  addFiles: (files: FileResponse[]) => void;
+  // ... other state and actions
+}
+
+export const useInventoryStore = create<InventoryStore>((set) => ({
+  files: [],
+  clusters: [],
+  setFiles: (files) => set({ files }),
+  addFiles: (newFiles) => set((state) => ({ 
+    files: [...state.files, ...newFiles] 
+  })),
+  // ... other actions
+}));
+```
+
+================================================================================
+10. UI/UX BEST PRACTICES
+================================================================================
+
+LOADING STATES:
+---------------
+- Show spinners during API calls
+- Disable buttons while processing
+- Display progress indicators for uploads
+
+ERROR HANDLING:
+---------------
+- Show user-friendly error messages
+- Provide retry options
+- Log errors to console for debugging
+
+RESPONSIVE DESIGN:
+------------------
+- Use grid layouts that adapt to screen size
+- Make dendrogram zoomable on mobile
+- Ensure touch-friendly controls
+
+PERFORMANCE:
+------------
+- Lazy load large datasets
+- Virtualize long lists
+- Debounce search inputs
+- Cache API responses when appropriate
+
+ACCESSIBILITY:
+--------------
+- Add ARIA labels to interactive elements
+- Ensure keyboard navigation works
+- Provide alt text for visualizations
+- Use semantic HTML
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+CORS Issues:
+- Ensure backend CORS is configured correctly
+- Check that API_BASE_URL is correct
+
+Embedding Not Completing:
+- Check backend logs for errors
+- Verify ML models are downloaded
+- Ensure sufficient memory/CPU
+
+Large File Uploads:
+- Consider chunked uploads for very large files
+- Add file size validation
+- Show upload progress
+
+================================================================================
+SUPPORT & RESOURCES
+================================================================================
+
+- API Documentation: frontend/API_SPEC.md
+- TypeScript Types: frontend/src/types/api.ts
+- Backend Code: backend/app/
+- Example Usage: See code snippets above
+
+For questions or issues, check backend logs and API responses.
+
+================================================================================
+

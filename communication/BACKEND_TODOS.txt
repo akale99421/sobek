@@ -1,0 +1,113 @@
+================================================================================
+BACKEND TASKS & TODOS
+================================================================================
+Last Updated: Session System Complete
+Agent: Backend Developer
+
+INSTRUCTIONS:
+1. Review this file daily for your tasks
+2. Update status as you complete tasks
+3. Add new frontend tasks to FRONTEND_TODOS.txt when backend features are ready
+4. Update BACKEND_CHANGELOG.txt with all changes
+5. Frontend agent will review your changelog and todos
+
+================================================================================
+CURRENT SPRINT - FILE UPLOAD TO MINIO
+================================================================================
+
+[ ] 1. Add MinIO Client to Backend
+   - Install boto3 (AWS S3 SDK, works with MinIO)
+   - Add MinIO configuration to config.py
+   - Create MinIO service class
+   - Priority: HIGH
+   - Blocks: All file storage features
+
+[ ] 2. Create File Upload Endpoint
+   - POST /api/files/upload
+   - Accept multiple files
+   - Store in MinIO under: uploads/{session_id}/{filename}
+   - Save metadata to PostgreSQL
+   - Return file IDs and URLs
+   - Priority: HIGH
+   - Frontend needs: File upload integration
+
+[ ] 3. File Metadata Model
+   - Create File model in models/
+   - Fields: file_id, session_id, filename, file_type, size, minio_path, uploaded_at
+   - Add to database
+   - Priority: HIGH
+
+[ ] 4. File Retrieval Endpoints
+   - GET /api/files/session/{session_id} - List all files for session
+   - GET /api/files/{file_id} - Get file metadata
+   - GET /api/files/{file_id}/download - Download file from MinIO
+   - Priority: MEDIUM
+   - Frontend needs: File list display
+
+[ ] 5. File Deletion Endpoint
+   - DELETE /api/files/{file_id}
+   - Remove from MinIO
+   - Remove from PostgreSQL
+   - Priority: MEDIUM
+   - Frontend needs: Delete button functionality
+
+================================================================================
+COMPLETED TASKS
+================================================================================
+
+[✅] Session System
+   - Session model created
+   - POST /api/session endpoint
+   - GET /api/session/{id} endpoint
+   - PostgreSQL integration working
+   - Completed: 2025-11-30
+
+[✅] Database Setup
+   - SQLAlchemy configured
+   - PostgreSQL connection
+   - Auto-create tables on startup
+   - Completed: 2025-11-30
+
+[✅] Health Check API
+   - GET /health endpoint
+   - Returns status and timestamp
+   - Completed: Initial setup
+
+================================================================================
+BACKLOG
+================================================================================
+
+[ ] File Analysis Features
+   - Text extraction from files
+   - Image analysis
+   - CSV parsing
+   - Priority: LOW (after upload works)
+
+[ ] Embedding Generation
+   - Generate embeddings for uploaded files
+   - Store in Qdrant
+   - Track embedding status
+   - Priority: LOW
+
+[ ] Clustering Features
+   - Hierarchical clustering
+   - Dendrogram generation
+   - Cluster explorer
+   - Priority: LOW
+
+================================================================================
+FRONTEND INTEGRATION NOTES
+================================================================================
+
+When you complete a task that frontend needs:
+1. Update FRONTEND_TODOS.txt with the new capability
+2. Document the API in BACKEND_CHANGELOG.txt
+3. Include example request/response
+4. Note any TypeScript types needed
+
+Current frontend blockers:
+- Waiting for file upload endpoint to connect "Analyze Files" button
+- Needs file list endpoint to display uploaded files
+
+================================================================================
+
